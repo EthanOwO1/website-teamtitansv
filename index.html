@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Team Titans V Robotics</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Tailwind Config for Custom Colors/Fonts -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              orbitron: ["Orbitron", "sans-serif"],
+              rajdhani: ["Rajdhani", "sans-serif"],
+            },
+            colors: {
+              titan: {
+                dark: "#0f172a", // Slate 900
+                light: "#e2e8f0", // Slate 200
+                accent: "#06b6d4", // Cyan 500
+                accentHover: "#0891b2", // Cyan 600
+                secondary: "#f59e0b", // Amber 500 (Gold/Bronze for medals)
+              },
+            },
+            animation: {
+              "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+              float: "float 6s ease-in-out infinite",
+            },
+            keyframes: {
+              float: {
+                "0%, 100%": { transform: "translateY(0)" },
+                "50%": { transform: "translateY(-20px)" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      /* Custom Styles for things Tailwind makes tricky */
+      body {
+        background-color: #0f172a;
+        color: #e2e8f0;
+        overflow-x: hidden;
+      }
+
+      /* HUD Borders */
+      .hud-border {
+        position: relative;
+        border: 1px solid rgba(6, 182, 212, 0.3);
+      }
+      .hud-border::before,
+      .hud-border::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        transition: all 0.3s ease;
+      }
+      .hud-border::before {
+        top: -1px;
+        left: -1px;
+        border-top: 2px solid #06b6d4;
+        border-left: 2px solid #06b6d4;
+      }
+      .hud-border::after {
+        bottom: -1px;
+        right: -1px;
+        border-bottom: 2px solid #06b6d4;
+        border-right: 2px solid #06b6d4;
+      }
+      .hud-border:hover::before,
+      .hud-border:hover::after {
+        width: 100%;
+        height: 100%;
+        opacity: 0.5;
+      }
+
+      /* Scrollbar */
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #1e293b;
+        border-radius: 5px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #06b6d4;
+      }
+
+      /* Reveal Animation Classes */
+      .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.8s ease-out;
+      }
+      .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    </style>
+  </head>
+  <body class="font-rajdhani selection:bg-titan-accent selection:text-white">
+    <!-- Navigation -->
+    <nav
+      id="navbar"
+      class="fixed w-full z-50 transition-all duration-300 py-4 bg-titan-dark/90 backdrop-blur-md border-b border-white/10"
+    >
+      <div class="container mx-auto px-6 flex justify-between items-center">
+        <a
+          href="#"
+          class="text-2xl font-orbitron font-bold text-white flex items-center gap-2"
+        >
+          <i class="fa-solid fa-robot text-titan-accent"></i> TITANS
+          <span class="text-titan-accent">V</span>
+        </a>
+
+        <!-- Desktop Menu -->
+        <div class="hidden md:flex items-center gap-8 text-lg font-medium">
+          <a href="#home" class="hover:text-titan-accent transition-colors"
+            >Home</a
+          >
+          <a href="#about" class="hover:text-titan-accent transition-colors"
+            >About</a
+          >
+          <a href="#robots" class="hover:text-titan-accent transition-colors"
+            >Robots</a
+          >
+          <a
+            href="#achievements"
+            class="hover:text-titan-accent transition-colors"
+            >Awards</a
+          >
+          <a href="#sponsors" class="hover:text-titan-accent transition-colors"
+            >Sponsors</a
+          >
+          <a
+            href="#contact"
+            class="px-4 py-2 border border-titan-accent text-titan-accent hover:bg-titan-accent hover:text-white transition-all rounded hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]"
+          >
+            Join Us
+          </a>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button
+          id="mobile-menu-btn"
+          class="md:hidden text-2xl text-white hover:text-titan-accent"
+        >
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+
+      <!-- Mobile Dropdown -->
+      <div
+        id="mobile-menu"
+        class="hidden md:hidden absolute top-full left-0 w-full bg-slate-900 border-b border-white/10 py-4 flex flex-col items-center gap-4 shadow-2xl"
+      >
+        <a href="#home" class="text-xl hover:text-titan-accent mobile-link"
+          >Home</a
+        >
+        <a href="#about" class="text-xl hover:text-titan-accent mobile-link"
+          >About</a
+        >
+        <a href="#robots" class="text-xl hover:text-titan-accent mobile-link"
+          >Robots</a
+        >
+        <a
+          href="#achievements"
+          class="text-xl hover:text-titan-accent mobile-link"
+          >Awards</a
+        >
+        <a href="#sponsors" class="text-xl hover:text-titan-accent mobile-link"
+          >Sponsors</a
+        >
+        <a href="#contact" class="text-xl text-titan-accent mobile-link"
+          >Join Us</a
+        >
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section
+      id="home"
+      class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20"
+    >
+      <!-- Background Gradient & Image Overlay -->
+      <div class="absolute inset-0 z-0">
+        <img
+          src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?q=80&w=2070&auto=format&fit=crop"
+          alt="Robotics Lab"
+          class="w-full h-full object-cover opacity-20"
+        />
+        <div
+          class="absolute inset-0 bg-gradient-to-t from-titan-dark via-titan-dark/80 to-transparent"
+        ></div>
+        <div
+          class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-titan-accent/10 via-transparent to-transparent"
+        ></div>
+      </div>
+
+      <div class="container mx-auto px-6 z-10 text-center">
+        <div
+          class="inline-block mb-4 px-4 py-1 rounded-full border border-titan-accent/30 bg-titan-accent/10 text-titan-accent text-sm font-bold tracking-wider animate-pulse-slow"
+        >
+          SEASON 2025 • FULLY OPERATIONAL
+        </div>
+        <h1
+          class="text-5xl md:text-7xl lg:text-9xl font-orbitron font-black text-white mb-6 tracking-tight drop-shadow-lg"
+        >
+          TITANS
+          <span
+            class="text-transparent bg-clip-text bg-gradient-to-r from-titan-accent to-blue-600"
+            >V</span
+          >
+        </h1>
+        <p
+          class="text-xl md:text-2xl text-slate-300 max-w-3xl mx-auto mb-10 font-light"
+        >
+          Engineering the future through innovation, competition, and teamwork.
+          We are the next generation of roboticists.
+        </p>
+        <div class="flex flex-col md:flex-row gap-4 justify-center">
+          <a
+            href="#robots"
+            class="group relative px-8 py-4 bg-titan-accent text-white font-bold rounded overflow-hidden transition-all hover:scale-105 shadow-[0_0_20px_rgba(6,182,212,0.4)]"
+          >
+            <div
+              class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"
+            ></div>
+            <span>SEE OUR ROBOTS</span>
+            <i
+              class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"
+            ></i>
+          </a>
+          <a
+            href="#about"
+            class="px-8 py-4 bg-transparent border border-white/20 text-white font-bold rounded hover:bg-white/5 transition-all hover:border-titan-accent"
+          >
+            MEET THE TEAM
+          </a>
+        </div>
+      </div>
+
+      <!-- Scroll Indicator -->
+      <div
+        class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce text-titan-accent"
+      >
+        <i class="fa-solid fa-chevron-down text-2xl"></i>
+      </div>
+    </section>
+
+    <!-- Stats Banner -->
+    <div class="bg-slate-800/50 border-y border-white/5 py-8 backdrop-blur-sm">
+      <div
+        class="container mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
+      >
+        <div class="reveal">
+          <h3 class="text-4xl font-orbitron font-bold text-white">5+</h3>
+          <p class="text-titan-accent text-sm uppercase tracking-widest">
+            Years Active
+          </p>
+        </div>
+        <div class="reveal transition-delay-100">
+          <h3 class="text-4xl font-orbitron font-bold text-white">12</h3>
+          <p class="text-titan-accent text-sm uppercase tracking-widest">
+            Competitions Won
+          </p>
+        </div>
+        <div class="reveal transition-delay-200">
+          <h3 class="text-4xl font-orbitron font-bold text-white">30+</h3>
+          <p class="text-titan-accent text-sm uppercase tracking-widest">
+            Team Members
+          </p>
+        </div>
+        <div class="reveal transition-delay-300">
+          <h3 class="text-4xl font-orbitron font-bold text-white">100%</h3>
+          <p class="text-titan-accent text-sm uppercase tracking-widest">
+            Dedication
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 bg-titan-dark">
+      <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row items-center gap-16">
+          <div class="md:w-1/2 reveal">
+            <div class="relative">
+              <div
+                class="absolute -inset-4 bg-titan-accent/20 rounded-lg blur-lg"
+              ></div>
+              <img
+                src="https://images.unsplash.com/photo-1563206767-5b18f218e8de?q=80&w=2069&auto=format&fit=crop"
+                alt="Team working on robot"
+                class="relative rounded-lg border border-white/10 shadow-2xl w-full"
+              />
+              <!-- Decorative Elements -->
+              <div
+                class="absolute -top-6 -right-6 w-24 h-24 border-t-4 border-r-4 border-titan-accent rounded-tr-3xl"
+              ></div>
+              <div
+                class="absolute -bottom-6 -left-6 w-24 h-24 border-b-4 border-l-4 border-titan-accent rounded-bl-3xl"
+              ></div>
+            </div>
+          </div>
+          <div class="md:w-1/2 reveal">
+            <h2 class="text-3xl md:text-5xl font-orbitron font-bold mb-6">
+              WHO ARE THE <span class="text-titan-accent">TITANS?</span>
+            </h2>
+            <p class="text-lg text-slate-300 mb-6 leading-relaxed">
+              Team Titans V is more than just a robotics club; we are a
+              community of innovators, problem solvers, and future engineers.
+              Founded in 2019, our mission is to push the boundaries of high
+              school robotics while fostering leadership and technical skills.
+            </p>
+            <p class="text-lg text-slate-300 mb-8 leading-relaxed">
+              We design, build, and program competitive robots for state and
+              national championships. From complex mechanical lifts to
+              autonomous vision programming, every bolt and line of code
+              represents our passion.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div
+                class="flex items-center gap-4 bg-slate-800/50 p-4 rounded border border-white/5"
+              >
+                <div
+                  class="w-12 h-12 rounded-full bg-titan-accent/20 flex items-center justify-center text-titan-accent"
+                >
+                  <i class="fa-solid fa-code text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold font-orbitron">Programming</h4>
+                  <p class="text-sm text-slate-400">Java & Python</p>
+                </div>
+              </div>
+              <div
+                class="flex items-center gap-4 bg-slate-800/50 p-4 rounded border border-white/5"
+              >
+                <div
+                  class="w-12 h-12 rounded-full bg-titan-secondary/20 flex items-center justify-center text-titan-secondary"
+                >
+                  <i class="fa-solid fa-gears text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold font-orbitron">Engineering</h4>
+                  <p class="text-sm text-slate-400">CAD & Fabrication</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Robots Section -->
+    <section id="robots" class="py-20 bg-slate-900 relative">
+      <!-- Grid Background Pattern -->
+      <div
+        class="absolute inset-0"
+        style="
+          background-image: radial-gradient(#1e293b 1px, transparent 1px);
+          background-size: 30px 30px;
+          opacity: 0.5;
+        "
+      ></div>
+
+      <div class="container mx-auto px-6 relative z-10">
+        <div class="text-center mb-16 reveal">
+          <h2 class="text-3xl md:text-5xl font-orbitron font-bold mb-4">
+            OUR <span class="text-titan-accent">MACHINES</span>
+          </h2>
+          <div class="h-1 w-24 bg-titan-accent mx-auto rounded-full"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Robot Card 1 -->
+          <div class="group bg-slate-800/50 p-1 hud-border reveal">
+            <div class="relative overflow-hidden h-64">
+              <img
+                src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=2070&auto=format&fit=crop"
+                alt="Robot V1"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"
+              ></div>
+              <div class="absolute bottom-4 left-4">
+                <h3 class="text-2xl font-orbitron font-bold text-white">
+                  TITAN X-1
+                </h3>
+                <p class="text-titan-accent text-sm">2023-2024 Season</p>
+              </div>
+            </div>
+            <div class="p-6">
+              <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+                <div>
+                  <span class="block text-slate-400 text-xs">WEIGHT</span>
+                  <span class="font-mono font-bold">125 LBS</span>
+                </div>
+                <div>
+                  <span class="block text-slate-400 text-xs">DRIVE</span>
+                  <span class="font-mono font-bold">MECANUM</span>
+                </div>
+                <div>
+                  <span class="block text-slate-400 text-xs">AUTO</span>
+                  <span class="font-mono font-bold">VISION AI</span>
+                </div>
+                <div>
+                  <span class="block text-slate-400 text-xs">LIFT</span>
+                  <span class="font-mono font-bold">PNEUMATIC</span>
+                </div>
+              </div>
+              <p class="text-slate-300 text-sm border-t border-white/10 pt-4">
+                Our flagship defensive bot featuring high-speed omni-directional
+                movement and a precision intake system.
+              </p>
+            </div>
+          </div>
+
+          <!-- Robot Card 2 -->
+          <div
+            class="group bg-slate-800/50 p-1 hud-border reveal transition-delay-100"
+          >
+            <div class="relative overflow-hidden h-64">
+              <img
+                src="https://images.unsplash.com/photo-1561557944-6e7860d1a6eb?q=80&w=1000&auto=format&fit=crop"
+                alt="Robot V2"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"
+              ></div>
+              <div class="absolute bottom-4 left-4">
+                <h3 class="text-2xl font-orbitron font-bold text-white">
+                  VALKYRIE
+                </h3>
+                <p class="text-titan-accent text-sm">2024-2025 Season</p>
+              </div>
+            </div>
+            <div class="p-6">
+              <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+                <div>
+                  <span class="block text-slate-400 text-xs">WEIGHT</span>
+                  <span class="font-mono font-bold">118 LBS</span>
+                </div>
+                <div>
+                  <span class="block text-slate-400 text-xs">DRIVE</span>
+                  <span class="font-mono font-bold">SWERVE</span>
+                </div>
+                <div>
+                  <span class="block text-slate-400 text-xs">AUTO</span>
+                  <span class="font-mono font-bold">LIDAR</span>
+                </div>
+                <div>
+                  <span class="block text-slate-400 text-xs">ARM</span>
+                  <span class="font-mono font-bold">TELESCOPIC</span>
+                </div>
+              </div>
+              <p class="text-slate-300 text-sm border-t border-white/10 pt-4">
+                Built for speed and agility. Valkyrie utilizes a custom swerve
+                drive and an advanced path-following algorithm.
+              </p>
+            </div>
+          </div>
+
+          <!-- Robot Card 3 -->
+          <div
+            class="group bg-slate-800/50 p-1 hud-border reveal transition-delay-200"
+          >
+            <div
+              class="relative overflow-hidden h-64 bg-slate-800 flex items-center justify-center"
+            >
+              <i
+                class="fa-solid fa-screwdriver-wrench text-6xl text-slate-600 group-hover:text-titan-accent transition-colors"
+              ></i>
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"
+              ></div>
+              <div class="absolute bottom-4 left-4">
+                <h3 class="text-2xl font-orbitron font-bold text-white">
+                  PROTOTYPE Z
+                </h3>
+                <p class="text-titan-accent text-sm">In Development</p>
+              </div>
+            </div>
+            <div class="p-6">
+              <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+                <div>
+                  <span class="block text-slate-400 text-xs">STATUS</span>
+                  <span class="font-mono font-bold text-yellow-500"
+                    >BUILDING</span
+                  >
+                </div>
+                <div>
+                  <span class="block text-slate-400 text-xs">GOAL</span>
+                  <span class="font-mono font-bold">REGIONAL</span>
+                </div>
+              </div>
+              <p class="text-slate-300 text-sm border-t border-white/10 pt-4">
+                Currently under construction. Follow our social media for
+                updates on the chassis design and testing phase.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Achievements Section -->
+    <section
+      id="achievements"
+      class="py-20 bg-gradient-to-b from-titan-dark to-slate-900"
+    >
+      <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row items-center gap-12">
+          <div class="md:w-1/2 reveal">
+            <h2 class="text-3xl md:text-5xl font-orbitron font-bold mb-8">
+              HALL OF <span class="text-titan-secondary">VICTORY</span>
+            </h2>
+
+            <div class="space-y-6">
+              <!-- Achievement Item -->
+              <div class="flex gap-4">
+                <div
+                  class="flex-shrink-0 w-16 h-16 bg-titan-secondary/20 rounded-lg flex items-center justify-center border border-titan-secondary/40"
+                >
+                  <i
+                    class="fa-solid fa-trophy text-2xl text-titan-secondary"
+                  ></i>
+                </div>
+                <div>
+                  <h4 class="text-xl font-bold text-white">
+                    Regional Champions
+                  </h4>
+                  <p class="text-titan-accent text-sm font-mono">
+                    2024 NORTH EAST REGIONAL
+                  </p>
+                  <p class="text-slate-400 text-sm mt-1">
+                    Ranked #1 in qualifying matches and undefeated in playoffs.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Achievement Item -->
+              <div class="flex gap-4">
+                <div
+                  class="flex-shrink-0 w-16 h-16 bg-blue-500/20 rounded-lg flex items-center justify-center border border-blue-500/40"
+                >
+                  <i class="fa-solid fa-award text-2xl text-blue-400"></i>
+                </div>
+                <div>
+                  <h4 class="text-xl font-bold text-white">
+                    Innovation in Control
+                  </h4>
+                  <p class="text-titan-accent text-sm font-mono">
+                    2023 STATE FINALS
+                  </p>
+                  <p class="text-slate-400 text-sm mt-1">
+                    Awarded for our custom computer vision targeting system.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Achievement Item -->
+              <div class="flex gap-4">
+                <div
+                  class="flex-shrink-0 w-16 h-16 bg-purple-500/20 rounded-lg flex items-center justify-center border border-purple-500/40"
+                >
+                  <i
+                    class="fa-solid fa-hand-holding-heart text-2xl text-purple-400"
+                  ></i>
+                </div>
+                <div>
+                  <h4 class="text-xl font-bold text-white">
+                    Community Outreach
+                  </h4>
+                  <p class="text-titan-accent text-sm font-mono">2023 SEASON</p>
+                  <p class="text-slate-400 text-sm mt-1">
+                    Recognized for hosting 5 robotics workshops for local
+                    elementary schools.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="md:w-1/2 reveal">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-4 mt-8">
+                <img
+                  src="https://images.unsplash.com/photo-1535378437323-955a65957002?q=80&w=1000&auto=format&fit=crop"
+                  class="rounded-lg shadow-lg w-full object-cover h-48 opacity-80 hover:opacity-100 transition-opacity"
+                />
+                <img
+                  src="https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?q=80&w=1000&auto=format&fit=crop"
+                  class="rounded-lg shadow-lg w-full object-cover h-64 opacity-80 hover:opacity-100 transition-opacity"
+                />
+              </div>
+              <div class="space-y-4">
+                <img
+                  src="https://images.unsplash.com/photo-1580927752452-89d86da3fa0a?q=80&w=1000&auto=format&fit=crop"
+                  class="rounded-lg shadow-lg w-full object-cover h-64 opacity-80 hover:opacity-100 transition-opacity"
+                />
+                <img
+                  src="https://images.unsplash.com/photo-1504639725590-34d0984388bd?q=80&w=1000&auto=format&fit=crop"
+                  class="rounded-lg shadow-lg w-full object-cover h-48 opacity-80 hover:opacity-100 transition-opacity"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sponsors Section -->
+    <section id="sponsors" class="py-16 bg-slate-900 border-t border-white/5">
+      <div class="container mx-auto px-6 text-center">
+        <h2 class="text-2xl md:text-3xl font-orbitron font-bold mb-2">
+          POWERED BY
+        </h2>
+        <p class="text-slate-400 mb-10">
+          Our generous sponsors who make this possible
+        </p>
+
+        <div
+          class="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-70"
+        >
+          <!-- Placeholder Logos (Using FontAwesome as placeholders for actual logos) -->
+          <div
+            class="group p-4 hover:bg-white/5 rounded transition-all cursor-pointer"
+          >
+            <div
+              class="text-4xl text-slate-500 group-hover:text-white flex flex-col items-center gap-2"
+            >
+              <i class="fa-brands fa-aws"></i>
+              <span class="text-xs font-sans tracking-wider font-bold"
+                >TECH CORP</span
+              >
+            </div>
+          </div>
+          <div
+            class="group p-4 hover:bg-white/5 rounded transition-all cursor-pointer"
+          >
+            <div
+              class="text-4xl text-slate-500 group-hover:text-white flex flex-col items-center gap-2"
+            >
+              <i class="fa-brands fa-google"></i>
+              <span class="text-xs font-sans tracking-wider font-bold"
+                >INNOVATE</span
+              >
+            </div>
+          </div>
+          <div
+            class="group p-4 hover:bg-white/5 rounded transition-all cursor-pointer"
+          >
+            <div
+              class="text-4xl text-slate-500 group-hover:text-white flex flex-col items-center gap-2"
+            >
+              <i class="fa-brands fa-microsoft"></i>
+              <span class="text-xs font-sans tracking-wider font-bold"
+                >SYSTEMS</span
+              >
+            </div>
+          </div>
+          <div
+            class="group p-4 hover:bg-white/5 rounded transition-all cursor-pointer"
+          >
+            <div
+              class="text-4xl text-slate-500 group-hover:text-white flex flex-col items-center gap-2"
+            >
+              <i class="fa-solid fa-microchip"></i>
+              <span class="text-xs font-sans tracking-wider font-bold"
+                >LOCAL MFG</span
+              >
+            </div>
+          </div>
+          <div
+            class="group p-4 hover:bg-white/5 rounded transition-all cursor-pointer"
+          >
+            <div
+              class="text-4xl text-slate-500 group-hover:text-white flex flex-col items-center gap-2"
+            >
+              <i class="fa-solid fa-bolt"></i>
+              <span class="text-xs font-sans tracking-wider font-bold"
+                >ENERGY INC</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-10">
+          <a href="#contact" class="text-sm text-titan-accent hover:underline"
+            >Interested in sponsoring us? Download our prospectus
+            <i class="fa-solid fa-download ml-1"></i
+          ></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact/CTA Section -->
+    <section id="contact" class="py-20 bg-titan-dark relative overflow-hidden">
+      <div
+        class="absolute top-0 right-0 w-96 h-96 bg-titan-accent/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"
+      ></div>
+
+      <div class="container mx-auto px-6 relative z-10">
+        <div
+          class="max-w-4xl mx-auto bg-slate-800/80 backdrop-blur-lg rounded-2xl p-8 md:p-12 border border-white/10 shadow-2xl reveal"
+        >
+          <div class="text-center mb-10">
+            <h2 class="text-3xl md:text-4xl font-orbitron font-bold mb-4">
+              JOIN THE <span class="text-titan-accent">MISSION</span>
+            </h2>
+            <p class="text-slate-300">
+              Whether you're a student looking to join, a mentor wanting to
+              help, or a potential sponsor, we want to hear from you.
+            </p>
+          </div>
+
+          <form
+            class="space-y-6"
+            onsubmit="event.preventDefault(); alert('Thanks for contacting Team Titans V! This is a demo form.');"
+          >
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-bold text-slate-400 mb-2"
+                  >Name</label
+                >
+                <input
+                  type="text"
+                  class="w-full bg-slate-900 border border-slate-700 rounded p-3 text-white focus:outline-none focus:border-titan-accent transition-colors"
+                  placeholder="John Doe"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-slate-400 mb-2"
+                  >Email</label
+                >
+                <input
+                  type="email"
+                  class="w-full bg-slate-900 border border-slate-700 rounded p-3 text-white focus:outline-none focus:border-titan-accent transition-colors"
+                  placeholder="john@example.com"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-slate-400 mb-2"
+                >Message</label
+              >
+              <textarea
+                rows="4"
+                class="w-full bg-slate-900 border border-slate-700 rounded p-3 text-white focus:outline-none focus:border-titan-accent transition-colors"
+                placeholder="How can we work together?"
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-gradient-to-r from-titan-accent to-blue-600 text-white font-bold font-orbitron py-4 rounded hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all transform hover:-translate-y-1"
+            >
+              SEND TRANSMISSION
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 py-10 border-t border-white/10">
+      <div class="container mx-auto px-6">
+        <div
+          class="flex flex-col md:flex-row justify-between items-center gap-6"
+        >
+          <div class="text-center md:text-left">
+            <h3 class="text-2xl font-orbitron font-bold text-white">
+              TITANS <span class="text-titan-accent">V</span>
+            </h3>
+            <p class="text-slate-500 text-sm mt-2">
+              © 2025 Team Titans V Robotics. All Systems Normal.
+            </p>
+          </div>
+
+          <div class="flex gap-6 text-2xl">
+            <a
+              href="#"
+              class="text-slate-400 hover:text-titan-accent transition-colors"
+              ><i class="fa-brands fa-instagram"></i
+            ></a>
+            <a
+              href="#"
+              class="text-slate-400 hover:text-titan-accent transition-colors"
+              ><i class="fa-brands fa-twitter"></i
+            ></a>
+            <a
+              href="#"
+              class="text-slate-400 hover:text-titan-accent transition-colors"
+              ><i class="fa-brands fa-youtube"></i
+            ></a>
+            <a
+              href="#"
+              class="text-slate-400 hover:text-titan-accent transition-colors"
+              ><i class="fa-brands fa-github"></i
+            ></a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+      // Mobile Menu Toggle
+      const btn = document.getElementById("mobile-menu-btn");
+      const menu = document.getElementById("mobile-menu");
+      const icon = btn.querySelector("i");
+      const mobileLinks = document.querySelectorAll(".mobile-link");
+
+      btn.addEventListener("click", () => {
+        menu.classList.toggle("hidden");
+        if (menu.classList.contains("hidden")) {
+          icon.classList.remove("fa-xmark");
+          icon.classList.add("fa-bars");
+        } else {
+          icon.classList.remove("fa-bars");
+          icon.classList.add("fa-xmark");
+        }
+      });
+
+      // Close mobile menu when link clicked
+      mobileLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          menu.classList.add("hidden");
+          icon.classList.remove("fa-xmark");
+          icon.classList.add("fa-bars");
+        });
+      });
+
+      // Navbar Scroll Effect
+      const navbar = document.getElementById("navbar");
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 50) {
+          navbar.classList.add("shadow-lg");
+          navbar.classList.replace("py-4", "py-2");
+        } else {
+          navbar.classList.remove("shadow-lg");
+          navbar.classList.replace("py-2", "py-4");
+        }
+      });
+
+      // Reveal on Scroll Animation
+      function reveal() {
+        var reveals = document.querySelectorAll(".reveal");
+        for (var i = 0; i < reveals.length; i++) {
+          var windowHeight = window.innerHeight;
+          var elementTop = reveals[i].getBoundingClientRect().top;
+          var elementVisible = 150;
+          if (elementTop < windowHeight - elementVisible) {
+            reveals[i].classList.add("active");
+          }
+        }
+      }
+      window.addEventListener("scroll", reveal);
+      // Trigger once on load
+      reveal();
+    </script>
+  </body>
+</html>
